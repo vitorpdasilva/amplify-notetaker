@@ -1,10 +1,11 @@
+import { withAuthenticator } from 'aws-amplify-react';
 
 function App() {
   return (
-    <div className="App">
+    <div>
       app
     </div>
   );
 }
 
-export default App;
+export default withAuthenticator(App, { includeGreetings: true });
