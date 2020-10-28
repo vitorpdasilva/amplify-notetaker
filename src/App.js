@@ -1,17 +1,26 @@
 import { useState } from 'react';
+import { API, graphqlOperation } from 'aws-amplify';
 import { withAuthenticator } from 'aws-amplify-react';
+import { createNote } from './graphql/mutations';
 
 function App() {
+  const [note, setNote] = useState("");
   const [notes, setNotes] = useState([{ id: 1, note: 'hello' }]);
+
+  const submitNote = event => {
+    event.preventDefault();
+    API.graphql(graphqlOperation(createNote, { input: { note }}))
+  }
   return (
     <div className="flex flex-column items-center justify-center pa3 bg-washed-red">
       <h1 className="code f2-1">
         Amplify NoteTaker
       </h1>
-      <form className="mb3">
+      <form onSubmit={event => submitNote(event)} className="mb3">
         <input 
           className="pa2 f4" 
           placeholder="Write your note"
+          onChange={({ target: { value }}) => setNote(value)}
         />
         <button className="pa2 f4" type="submit">
           Add note
