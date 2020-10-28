@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { withAuthenticator } from 'aws-amplify-react';
-import { createNote } from './graphql/mutations';
+import { createNote, deleteNote } from './graphql/mutations';
 import { listNotes } from './graphql/queries';
 
 function App() {
@@ -11,7 +11,6 @@ function App() {
   useEffect(() => {
     const fetchNotes = async () => {
       const { data } = await API.graphql(graphqlOperation(listNotes));
-      console.log(data.listNotes.items)
       setNotes(data.listNotes.items)
     }
     fetchNotes();
@@ -22,6 +21,12 @@ function App() {
     const { data } = await API.graphql(graphqlOperation(createNote, { input: { note }}))
     setNotes([data.createNote, ...notes]);
     setNote("");
+  }
+
+  const removeNote = async noteId => {
+    const { data } = await API.graphql(graphqlOperation(deleteNote, { input: { id: noteId }}));
+    const deletedNoteId = data.deleteNote.id;
+    setNotes(notes.filter(({ id }) => id !== deletedNoteId));
   }
   return (
     <div className="flex flex-column items-center justify-center pa3 bg-washed-red">
@@ -45,7 +50,7 @@ function App() {
             <li className="list pa1 f3">
               {note}
             </li>
-            <button className="bg-transparent bn f4">
+            <button onClick={() => removeNote(id)} className="bg-transparent bn f4">
               <span>&times;</span>
             </button>
           </div>
