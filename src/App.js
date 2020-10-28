@@ -1,15 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { withAuthenticator } from 'aws-amplify-react';
 import { createNote } from './graphql/mutations';
+import { listNotes } from './graphql/queries';
 
 function App() {
   const [note, setNote] = useState("");
-  const [notes, setNotes] = useState([{ id: 1, note: 'hello' }]);
+  const [notes, setNotes] = useState([]);
 
-  const submitNote = event => {
+  useEffect(() => {
+    const fetchNotes = async () => {
+      const { data } = await API.graphql(graphqlOperation(listNotes));
+      console.log(data.listNotes.items)
+      setNotes(data.listNotes.items)
+    }
+    fetchNotes();
+  }, []);
+
+  const submitNote = async event => {
     event.preventDefault();
-    API.graphql(graphqlOperation(createNote, { input: { note }}))
+    const { data } = await API.graphql(graphqlOperation(createNote, { input: { note }}))
+    setNotes([data.createNote, ...notes]);
+    setNote("");
   }
   return (
     <div className="flex flex-column items-center justify-center pa3 bg-washed-red">
@@ -20,6 +32,7 @@ function App() {
         <input 
           className="pa2 f4" 
           placeholder="Write your note"
+          value={note}
           onChange={({ target: { value }}) => setNote(value)}
         />
         <button className="pa2 f4" type="submit">
